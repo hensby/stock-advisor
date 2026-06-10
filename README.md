@@ -1,197 +1,167 @@
-# StockAdvisor — 美股选股与交易建议平台
+# StockAdvisor — US Stock Selection & Trading Advisory Platform
 
-将**技术面指标**、**机构情绪**、**YouTube/KOL 散户情绪**聚合为统一评分的美股选股建议系统。
+A composite-scoring stock advisory system that aggregates **technical indicators**, **institutional sentiment**, and **YouTube/retail sentiment** into actionable recommendations.
 
 ![dashboard preview](https://via.placeholder.com/800x400/1e293b/94a3b8?text=StockAdvisor+Dashboard)
 
-## 核心功能
+## Features
 
-| 功能 | 说明 |
+| Feature | Description |
 |---|---|
-| 综合评分引擎 | 技术面(40%) + 机构情绪(30%) + YouTube情绪(20%) + 基本面(10%) |
-| 20+ 技术指标 | SMA/EMA/MACD/RSI/ADX/布林带/OBV/MFI/CCI/Keltner |
-| 信号变化检测 | 当评分跨越阈值时自动记录信号变化及触发原因 |
-| 选股策略预设 | 技术面突破、趋势反转、价值发现、动量延续、聪明钱、YouTube热度 |
-| 每日简报 | 每日盘后生成 Top 10 优选 + 信号变化汇总 + 行业情绪对比 |
-| 自选股管理 | 分组管理自选股，快速查看持仓评分状态 |
-| 真实市场指数 | S&P 500 / NASDAQ / DOW / VIX 实时行情 |
+| Composite Scoring | Technical(40%) + Institutional(30%) + YouTube sentiment(20%) + Fundamentals(10%) |
+| 20+ Indicators | SMA/EMA/MACD/RSI/ADX/Bollinger Bands/OBV/MFI/CCI/Keltner |
+| Signal Change Detection | Automatic logging when scores cross thresholds, with trigger reasons |
+| Strategy Presets | Technical Breakout, Reversal Capture, Value Discovery, Momentum, Smart Money, YouTube Heat |
+| Daily Briefing | Top 10 picks + signal changes summary + sector sentiment comparison |
+| Watchlist Management | Group-based portfolio tracking with real-time score visibility |
+| Live Market Indices | S&P 500 / NASDAQ / DOW / VIX via yfinance |
 
-## 技术栈
+## Tech Stack
 
 ```
 Backend         Python 3.12+ / FastAPI / SQLAlchemy 2.0
 Frontend        Next.js 16 / TypeScript / Tailwind CSS / shadcn/ui
-Database        SQLite (MVP) → PostgreSQL (生产)
+Database        SQLite (MVP) → PostgreSQL (production)
 Data Sources    yfinance / Finnhub / YouTube Data API
-Caching         Redis + Celery (定时数据采集)
-AI              FinBERT (ProsusAI/finbert) — 情绪分析
+Caching         Redis + Celery (scheduled data collection)
+AI              FinBERT (ProsusAI/finbert) — sentiment analysis
 Charts          Lightweight Charts (TradingView) / Recharts
 ```
 
-## 快速开始
+## Quick Start
 
-### 本地开发
+### Local Development
 
 ```bash
-# 1. 后端
+# 1. Backend
 cd backend
 python -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
 
-# 2. 种子数据 (首次运行)
+# 2. Seed data (first run)
 SEED_COUNT=10 python scripts/seed_all.py
 
-# 3. 启动后端
+# 3. Start backend
 uvicorn app.main:app --host 127.0.0.1 --port 8000
 
-# 4. 启动前端 (新终端)
+# 4. Start frontend (new terminal)
 cd frontend
 npm install
 npm run dev
 ```
 
-访问 `http://localhost:3000` 查看仪表盘。
-API 文档：`http://localhost:8000/docs`
+Open `http://localhost:3000`.
+API docs: `http://localhost:8000/docs`
 
-### Docker 一键启动
+### Docker
 
 ```bash
 docker compose up -d
 ```
 
-访问 `http://localhost:3000`。
+> First run requires seed data: `docker compose exec backend python scripts/seed_all.py`
 
-> 首次运行需先执行种子数据脚本：`docker compose exec backend python scripts/seed_all.py`
+### Deploy to Mac Mini
 
-## API 概览
+Prerequisites: Passwordless SSH to Mac Mini (default `192.168.50.4`), Docker installed.
 
-| 方法 | 路径 | 说明 |
+```bash
+./deploy-macmini.sh
+```
+
+Access at `http://192.168.50.4:3000`.
+
+## API Reference
+
+| Method | Path | Description |
 |---|---|---|
-| GET | `/api/v1/stocks` | 股票列表 (分页/搜索/排序) |
-| GET | `/api/v1/stocks/{ticker}` | 个股详情 (评分+信号+逻辑) |
-| GET | `/api/v1/stocks/{ticker}/chart` | K线数据 |
-| GET | `/api/v1/stocks/{ticker}/signals` | 信号变化时间线 |
-| GET | `/api/v1/screener` | 多条件筛选器 |
-| GET | `/api/v1/screener/presets` | 6 个策略预设 |
-| GET | `/api/v1/briefing` | 每日简报 |
-| GET | `/api/v1/watchlist` | 自选股 CRUD |
-| POST | `/api/v1/watchlist` | 创建自选分组 |
-| DELETE | `/api/v1/watchlist/{id}` | 删除分组 |
-| POST | `/api/v1/watchlist/{id}/items` | 添加股票 |
-| DELETE | `/api/v1/watchlist/{id}/items/{ticker}` | 移除股票 |
-| GET | `/api/v1/settings/scoring-weights` | 评分权重 |
-| PUT | `/api/v1/settings/scoring-weights` | 修改评分权重 |
-| GET | `/api/v1/market/indices` | 大盘指数 |
+| GET | `/api/v1/stocks` | List stocks (paginated/searchable) |
+| GET | `/api/v1/stocks/{ticker}` | Stock detail (score + signals + thesis) |
+| GET | `/api/v1/stocks/{ticker}/chart` | OHLCV data with technical indicators |
+| GET | `/api/v1/stocks/{ticker}/signals` | Signal change timeline |
+| GET | `/api/v1/screener` | Multi-filter stock screener |
+| GET | `/api/v1/screener/presets` | 6 strategy presets |
+| GET | `/api/v1/briefing` | Daily briefing |
+| GET | `/api/v1/watchlist` | Watchlist CRUD |
+| POST | `/api/v1/watchlist` | Create watchlist group |
+| DELETE | `/api/v1/watchlist/{id}` | Delete group |
+| POST | `/api/v1/watchlist/{id}/items` | Add stock |
+| DELETE | `/api/v1/watchlist/{id}/items/{ticker}` | Remove stock |
+| GET | `/api/v1/settings/scoring-weights` | Scoring weights |
+| PUT | `/api/v1/settings/scoring-weights` | Update scoring weights |
+| GET | `/api/v1/market/indices` | Market indices |
 
-## 评分体系
+## Scoring System
 
 ```
-综合评分 = 技术面×0.40 + 机构情绪×0.30 + YouTube情绪×0.20 + 基本面×0.10
+Composite = Technical×0.40 + Institutional×0.30 + YouTube×0.20 + Fundamentals×0.10
 
-信号分级:
-  80-100  strong_buy (强烈买入)
-  60-79   buy (买入)
-  40-59   hold (持有)
-  20-39   sell (卖出)
-   0-19   strong_sell (强烈卖出)
+Signal Thresholds:
+  80-100  strong_buy
+  60-79   buy
+  40-59   hold
+  20-39   sell
+   0-19   strong_sell
 ```
 
-权重可通过 `PUT /api/v1/settings/scoring-weights` 调整。
+Weights can be adjusted via `PUT /api/v1/settings/scoring-weights`.
 
-## 项目结构
+## Project Structure
 
 ```
 stock-advisor/
 ├── backend/
 │   ├── app/
-│   │   ├── api/          # REST API 路由 (6 个模块)
-│   │   ├── models/       # SQLAlchemy 数据模型 (10 张表)
-│   │   ├── schemas/      # Pydantic 请求/响应 Schema
-│   │   ├── services/     # 业务逻辑层 (评分引擎/数据采集/简报)
-│   │   ├── tasks/        # Celery 定时任务
-│   │   └── utils/        # FinBERT 情绪分析封装
-│   └── scripts/seed_all.py   # 种子数据脚本
+│   │   ├── api/          # REST API routes (6 modules)
+│   │   ├── models/       # SQLAlchemy models (10 tables)
+│   │   ├── schemas/      # Pydantic request/response schemas
+│   │   ├── services/     # Business logic (scoring/collection/briefing)
+│   │   ├── tasks/        # Celery scheduled tasks
+│   │   └── utils/        # FinBERT sentiment wrapper
+│   └── scripts/seed_all.py
 ├── frontend/
-│   ├── app/              # Next.js 页面 (7 个路由)
-│   ├── components/       # React 组件 (layout/dashboard/screener/stock-detail/...)
-│   └── lib/              # API 客户端 / 类型定义 / 常量
-└── docker-compose.yml    # Docker 编排
+│   ├── app/              # Next.js pages (7 routes)
+│   ├── components/       # React components
+│   └── lib/              # API client / types / constants
+├── docker-compose.yml
+├── deploy-macmini.sh
+└── .env.example
 ```
 
-## 数据流
+## Data Pipeline
 
 ```
 yfinance ──→ PriceData ──→ TechnicalIndicator ──→ CompositeScore
                 ↓                                       ↓
             AnalystRating ──→ InstitutionalScore ──→ CompositeScore
                 ↓                                       ↓
-            YoutubeVideo ──→ YouTubeScore ──→ CompositeScore ──→ SignalChange
+            YoutubeVideo  ──→ YouTubeScore ──→ CompositeScore ──→ SignalChange
 ```
 
-## 路线图
-
-- [x] Phase 1: API / 数据模型 / 评分引擎
-- [x] Phase 2: 前端仪表盘 / 筛选器 / 个股详情
-- [x] Phase 3: 数据管道 / Celery 定时任务
-- [x] Phase 4: 简报 / 自选 / 设置 / 骨架屏
-- [x] Phase 5: Docker / 移动端响应 / 最终打磨
-- [ ] YouTube Data API 集成 (需 API Key)
-- [ ] Finnhub 机构数据集成 (需 API Key)
-- [ ] FinBERT 真实模型加载 (transformers)
-- [ ] 用户系统 / 邮箱简报通知
-- [ ] 扩展至纳斯达克 100
-
-## 环境变量
+## Environment Variables
 
 ```bash
-# backend/.env
-DATABASE_URL=sqlite+aiosqlite:///./data/stock_advisor.db
-FINNHUB_API_KEY=your_key       # 可选
-YOUTUBE_API_KEY=your_key       # 可选
+# backend/.env — optional, core features work without API keys
+FINNHUB_API_KEY=your_key       # analyst ratings, insider trades
+YOUTUBE_API_KEY=your_key       # video sentiment analysis
 
 # frontend/.env.local
 NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
 ```
 
+## Roadmap
+
+- [x] Phase 1: API / Data models / Scoring engine
+- [x] Phase 2: Frontend dashboard / Screener / Stock detail
+- [x] Phase 3: Data pipeline / Celery scheduler
+- [x] Phase 4: Briefing / Watchlist / Settings / Loading states
+- [x] Phase 5: Docker / Mobile responsive / Polish
+- [ ] YouTube Data API integration (requires API key)
+- [ ] Finnhub institutional data (requires API key)
+- [ ] Full FinBERT model (transformers)
+- [ ] User system / email briefing
+- [ ] Expand to NASDAQ 100
+
 ---
 
-**免责声明:** 本系统仅提供数据分析供参考，不构成投资建议。投资有风险，入市需谨慎。
-
----
-
-## 部署到 Mac Mini
-
-项目附带 `deploy-macmini.sh` 一键部署脚本，通过 SSH 将 Docker 镜像传输到 Mac Mini 并启动。
-
-### 前置条件
-
-- Mac Mini 已安装 Docker
-- 本机能 SSH 免密登录 Mac Mini
-- 网络互通 (默认 IP: `192.168.50.4`)
-
-### 部署
-
-```bash
-# 一键构建 + 传输 + 启动
-./deploy-macmini.sh
-
-# 指定分支
-./deploy-macmini.sh develop
-```
-
-### 手动部署
-
-```bash
-# 1. 构建
-docker compose build
-
-# 2. 传输 (或直接 ssh 到 Mac Mini 上 git pull)
-scp docker-compose.yml miniuser@192.168.50.4:~/stock-advisor/
-
-# 3. 在 Mac Mini 上
-ssh miniuser@192.168.50.4
-cd ~/stock-advisor
-docker compose up -d
-```
-
-访问 `http://192.168.50.4:3000`。
+**Disclaimer:** This system provides data analysis for reference only. It does not constitute investment advice. Investing involves risk.
