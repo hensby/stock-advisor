@@ -156,3 +156,42 @@ NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
 ---
 
 **免责声明:** 本系统仅提供数据分析供参考，不构成投资建议。投资有风险，入市需谨慎。
+
+---
+
+## 部署到 Mac Mini
+
+项目附带 `deploy-macmini.sh` 一键部署脚本，通过 SSH 将 Docker 镜像传输到 Mac Mini 并启动。
+
+### 前置条件
+
+- Mac Mini 已安装 Docker
+- 本机能 SSH 免密登录 Mac Mini
+- 网络互通 (默认 IP: `192.168.50.4`)
+
+### 部署
+
+```bash
+# 一键构建 + 传输 + 启动
+./deploy-macmini.sh
+
+# 指定分支
+./deploy-macmini.sh develop
+```
+
+### 手动部署
+
+```bash
+# 1. 构建
+docker compose build
+
+# 2. 传输 (或直接 ssh 到 Mac Mini 上 git pull)
+scp docker-compose.yml miniuser@192.168.50.4:~/stock-advisor/
+
+# 3. 在 Mac Mini 上
+ssh miniuser@192.168.50.4
+cd ~/stock-advisor
+docker compose up -d
+```
+
+访问 `http://192.168.50.4:3000`。
